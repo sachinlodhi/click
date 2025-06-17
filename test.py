@@ -1,6 +1,8 @@
 import pyautogui
 import time
 import os
+import json
+import sys
 from datetime import datetime
 import pandas as pd
 import pyperclip
@@ -10,6 +12,7 @@ class DataExtractor:
         self.textbox_position = None
         self.cell_positions = []  # List to store 10 cell positions
         self.extracted_data = []  # Store all test results
+        self.positions_file = "saved_positions.json"  # File to save positions
         
         # Create output directory
         self.output_dir = f"extracted_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
@@ -17,6 +20,84 @@ class DataExtractor:
         
         # Disable pyautogui failsafe (optional)
         pyautogui.FAILSAFE = True
+        
+    def save_positions(self):
+        """Save textbox and cell positions to file"""
+        try:
+            positions_data = {
+                'textbox_position': self.textbox_position,
+                'cell_positions': self.cell_positions,
+                'saved_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            }
+            
+            with open(self.positions_file, 'w') as f:
+                json.dump(positions_data, f, indent=2)
+            
+            print(f"✓ Positions saved to {self.positions_file}")
+            return True
+            
+        except Exception as e:
+            print(f"Error saving positions: {e}")
+            return False
+    
+    def load_positions(self):
+        """Load textbox and cell positions from file"""
+        try:
+            if not os.path.exists(self.positions_file):
+                return False
+                
+            with open(self.positions_file, 'r') as f:
+                positions_data = json.load(f)
+            
+            self.textbox_position = tuple(positions_data['textbox_position']) if positions_data['textbox_position'] else None
+            self.cell_positions = [tuple(pos) for pos in positions_data['cell_positions']]
+            
+            print(f"✓ Positions loaded from {self.positions_file}")
+            print(f"  Saved on: {positions_data.get('saved_date', 'Unknown')}")
+            print(f"  Textbox: {self.textbox_position}")
+            print(f"  Cell positions: {len(self.cell_positions)} cells loaded")
+            
+            return True
+            
+        except Exception as e:
+            print(f"Error loading positions: {e}")
+            return False
+    
+    def ask_load_or_set_positions(self):
+        """Ask user if they want to load saved positions or set new ones"""
+        if os.path.exists(self.positions_file):
+            print(f"\n📁 Found saved positions file: {self.positions_file}")
+            
+            # Try to load and show preview
+            try:
+                with open(self.positions_file, 'r') as f:
+                    data = json.load(f)
+                print(f"  Saved on: {data.get('saved_date', 'Unknown')}")
+                print(f"  Textbox position: {data.get('textbox_position')}")
+                print(f"  Cell positions: {len(data.get('cell_positions', []))} cells")
+            except:
+                print("  (File exists but couldn't preview)")
+            
+            choice = input("\nDo you want to load saved positions? (y/n): ").lower().strip()
+            
+            if choice in ['y', 'yes']:
+                if self.load_positions():
+                    # Verify positions are valid
+                    if self.textbox_position and len(self.cell_positions) == 10:
+                        print("✓ All positions loaded successfully!")
+                        return True
+                    else:
+                        print("❌ Loaded positions seem incomplete, will set manually")
+                        return False
+                else:
+                    print("❌ Failed to load positions, will set manually")
+                    return False
+            else:
+                print("📝 Will set positions manually")
+                return False
+        else:
+            print(f"\n📝 No saved positions found, will set manually")
+            return False
         
     def set_textbox_position(self):
         """Let user set the textbox position"""
@@ -219,16 +300,25 @@ class DataExtractor:
         print("5. Each test parameter creates 5 rows in CSV (one per table row)\n")
         print("CSV structure: test_parameter, row_number, column_1, column_2")
         
-        # Step 1: Set textbox position
-        if not self.set_textbox_position():
-            print("Failed to set textbox position. Exiting.")
-            return
+        # Try to load saved positions first
+        if self.ask_load_or_set_positions():
+            print("✓ Using loaded positions")
+        else:
+            # Step 1: Set textbox position
+            if not self.set_textbox_position():
+                print("Failed to set textbox position. Exiting.")
+                return
+                
+            # Step 2: Set cell positions
+            if not self.set_cell_positions():
+                print("Failed to set cell positions. Exiting.")
+                return
             
-        # Step 2: Set cell positions
-        if not self.set_cell_positions():
-            print("Failed to set cell positions. Exiting.")
-            return
-            
+            # Ask if user wants to save positions
+            save_choice = input("\n💾 Save these positions for future runs? (y/n): ").lower().strip()
+            if save_choice in ['y', 'yes']:
+                self.save_positions()
+        
         # Step 3: Configure parameter range
         try:
             print(f"\nParameter Range Configuration:")
@@ -256,4 +346,24 @@ class DataExtractor:
 
 if __name__ == "__main__":
     extractor = DataExtractor()
+    
+    # Check for command line arguments
+    if len(sys.argv) > 1:
+        if sys.argv[1] == "--clear-positions":
+            if os.path.exists(extractor.positions_file):
+                os.remove(extractor.positions_file)
+                print(f"✓ Cleared saved positions ({extractor.positions_file})")
+            else:
+                print("No saved positions to clear")
+            sys.exit(0)
+        elif sys.argv[1] == "--show-positions":
+            if os.path.exists(extractor.positions_file):
+                with open(extractor.positions_file, 'r') as f:
+                    data = json.load(f)
+                print("Saved positions:")
+                print(json.dumps(data, indent=2))
+            else:
+                print("No saved positions found")
+            sys.exit(0)
+    
     extractor.run()
