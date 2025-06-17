@@ -118,12 +118,14 @@ class DataExtractor:
                 val += step_val
         
         print(f"\nStarting parameter testing...")
+        test_values.insert(0, 5) # manually inserting
         print(f"Test values: {test_values}")
         print(f"Will test {len(test_values)} different parameters")
         print("Note: First value will be tested twice (saving only second result)")
         print("Press Ctrl+C to stop early\n")
         
         try:
+            first_time = False
             for i, test_value in enumerate(test_values):
                 print(f"\nTest {i+1}/{len(test_values)}: Testing value {test_value}")
                 
@@ -143,6 +145,10 @@ class DataExtractor:
                 
                 # 5. Wait for processing
                 time.sleep(delay)
+                if first_time == False:
+                  print("first time detected, skipping saving")
+                  first_time = True
+                  continue
                 
                 # 5. Extract data from all cells
                 cell_values = self.extract_all_cells()
