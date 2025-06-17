@@ -107,21 +107,20 @@ class DataExtractor:
             print("Textbox position or cell positions not set!")
             return False
             
-        # Generate test values - start one step earlier for priming
+        # Generate test values normally
         if step_val == int(step_val):  # Integer step
-            # Start one step earlier to prime the textbox
-            prime_start = int(start_val) - int(step_val)
-            test_values = list(range(prime_start, int(end_val) + 1, int(step_val)))
+            test_values = list(range(int(start_val), int(end_val) + 1, int(step_val)))
         else:  # Float step
             test_values = []
-            val = start_val - step_val  # Start one step earlier
+            val = start_val
             while val <= end_val:
                 test_values.append(round(val, 3))
                 val += step_val
         
         print(f"\nStarting parameter testing...")
-        print(f"Actual test values: {test_values[1:]} (discarding first: {test_values[0]})")
-        print(f"Will test {len(test_values)-1} different parameters")
+        print(f"Test values: {test_values}")
+        print(f"Will test {len(test_values)} different parameters")
+        print("Note: First value will be tested twice (saving only second result)")
         print("Press Ctrl+C to stop early\n")
         
         try:
@@ -174,9 +173,9 @@ class DataExtractor:
             return True
             
         except KeyboardInterrupt:
-            actual_tests = max(0, len(set(row['test_parameter'] for row in self.extracted_data)))
+            completed_tests = len(set(row['test_parameter'] for row in self.extracted_data))
             print(f"\nParameter testing stopped by user.")
-            print(f"Completed {actual_tests} parameters, collected {len(self.extracted_data)} rows")
+            print(f"Completed {completed_tests} parameters, collected {len(self.extracted_data)} rows")
             self.save_results_to_csv()
             return False
         except Exception as e:
@@ -211,9 +210,8 @@ class DataExtractor:
         print("2. Set 10 cell positions (5 rows × 2 columns table)")
         print("3. Automatically test parameters and extract cell values")
         print("4. Each test parameter creates 5 rows in CSV (one per table row)")
-        print("5. First iteration is discarded to fix textbox selection issues\n")
+        print("5. First value is tested twice (saves only second result for clean data)\n")
         print("CSV structure: test_parameter, row_number, column_1, column_2")
-        print("Note: Will start one step before your start value for priming")
         
         # Step 1: Set textbox position
         if not self.set_textbox_position():
@@ -234,8 +232,7 @@ class DataExtractor:
             delay = float(input(f"Delay after pressing Enter (seconds, default 0.2): ") or "0.2")
             
             print(f"\nTest range: {start_val} to {end_val}, step {step_val}")
-            print(f"Note: Will start from {start_val - step_val} (priming), then test your actual range")
-            print("Method: Prime textbox → Extract real data → Repeat")
+            print("Method: First value runs twice (saves 2nd), others run once")
             
         except ValueError:
             print("Invalid input, using defaults (1 to 10, step 1, delay 0.2)")
