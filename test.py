@@ -70,13 +70,13 @@ class DataExtractor:
         try:
             # Move to cell and double-click to select text
             pyautogui.click(cell_position)
-            time.sleep(0.02)
+            #time.sleep(0.02)
             pyautogui.doubleClick(cell_position)
-            time.sleep(0.02)
+            #time.sleep(0.02)
             
             # Copy selected text
             pyautogui.hotkey('ctrl', 'c')
-            time.sleep(0.05)  # Give time for copy to complete
+            #time.sleep(0.05)  # Give time for copy to complete
             
             # Get copied text from clipboard
             copied_text = pyperclip.paste()
@@ -131,11 +131,11 @@ class DataExtractor:
                 
                 # 1. Double-click on textbox to select existing text
                 pyautogui.doubleClick(self.textbox_position)
-                time.sleep(0.01)
+                #time.sleep(0.01)
                 
                 # 2. Press backspace multiple times to ensure clearing
                 pyautogui.press('backspace', presses=10)  # Clear up to 10 characters
-                time.sleep(0.01)
+                #time.sleep(0.01)
                 
                 # 3. Type new value
                 pyautogui.typewrite(str(test_value))
@@ -144,7 +144,7 @@ class DataExtractor:
                 pyautogui.press('enter')
                 
                 # 5. Wait for processing
-                time.sleep(delay)
+                #time.sleep(delay)
                 if first_time == False:
                   print("first time detected, skipping saving")
                   first_time = True
@@ -160,10 +160,10 @@ class DataExtractor:
                     col2_value = cell_values[row_idx * 2 + 1]  # Odd indices: 1,3,5,7,9
                     
                     result_row = {
-                        'test_parameter': test_value,
-                        'row_number': row_idx + 1,
-                        'column_1': col1_value,
-                        'column_2': col2_value
+                        #'test_parameter': test_value,
+                        #'row_number': row_idx + 1,
+                        'I': col1_value,
+                        'V': col2_value
                     }
                     
                     self.extracted_data.append(result_row)
