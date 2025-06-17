@@ -70,13 +70,13 @@ class DataExtractor:
         try:
             # Move to cell and double-click to select text
             pyautogui.click(cell_position)
-            time.sleep(0.05)
+            time.sleep(0.02)
             pyautogui.doubleClick(cell_position)
-            time.sleep(0.05)
+            time.sleep(0.02)
             
             # Copy selected text
             pyautogui.hotkey('ctrl', 'c')
-            time.sleep(0.1)  # Give time for copy to complete
+            time.sleep(0.05)  # Give time for copy to complete
             
             # Get copied text from clipboard
             copied_text = pyperclip.paste()
@@ -101,7 +101,7 @@ class DataExtractor:
         
         return cell_values
     
-    def auto_test_parameters(self, start_val, end_val, step_val, delay=0.5):
+    def auto_test_parameters(self, start_val, end_val, step_val, delay=0.2):
         """Main parameter testing loop with data extraction"""
         if self.textbox_position is None or len(self.cell_positions) != 10:
             print("Textbox position or cell positions not set!")
@@ -126,19 +126,21 @@ class DataExtractor:
             for i, test_value in enumerate(test_values):
                 print(f"\nTest {i+1}/{len(test_values)}: Testing value {test_value}")
                 
-                # 1. Click on textbox
-                pyautogui.click(self.textbox_position)
-                time.sleep(0.05)
-                
-                # 2. Select all text and type new value
-                pyautogui.hotkey('ctrl', 'a')  # Select all
+                # 1. Double-click on textbox to select existing text
+                pyautogui.doubleClick(self.textbox_position)
                 time.sleep(0.02)
-                pyautogui.typewrite(str(test_value))  # Type new value
                 
-                # 3. Press Enter to execute
+                # 2. Press backspace multiple times to ensure clearing
+                pyautogui.press('backspace', presses=10)  # Clear up to 10 characters
+                time.sleep(0.01)
+                
+                # 3. Type new value
+                pyautogui.typewrite(str(test_value))
+                
+                # 4. Press Enter to execute
                 pyautogui.press('enter')
                 
-                # 4. Wait for processing
+                # 5. Wait for processing
                 time.sleep(delay)
                 
                 # 5. Extract data from all cells
@@ -224,18 +226,18 @@ class DataExtractor:
             start_val = float(input(f"Start value (e.g., 1): ") or "1")
             end_val = float(input(f"End value (e.g., 10): ") or "10")
             step_val = float(input(f"Step size (e.g., 1 or 0.5): ") or "1")
-            delay = float(input(f"Delay after pressing Enter (seconds, default 0.5): ") or "0.5")
+            delay = float(input(f"Delay after pressing Enter (seconds, default 0.2): ") or "0.2")
             
             print(f"\nTest range: {start_val} to {end_val}, step {step_val}")
             print("Method: Type value → Enter → Extract 10 cells → Repeat")
             
         except ValueError:
-            print("Invalid input, using defaults (1 to 10, step 1, delay 0.5)")
-            start_val, end_val, step_val, delay = 1, 10, 1, 0.5
+            print("Invalid input, using defaults (1 to 10, step 1, delay 0.2)")
+            start_val, end_val, step_val, delay = 1, 10, 1, 0.2
             
         # Step 4: Countdown
-        print(f"\nStarting parameter testing in 3 seconds...")
-        for i in range(3, 0, -1):
+        print(f"\nStarting parameter testing in 2 seconds...")
+        for i in range(2, 0, -1):
             print(f"{i}...")
             time.sleep(1)
         print("Starting!")
