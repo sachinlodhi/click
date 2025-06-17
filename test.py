@@ -101,7 +101,7 @@ class DataExtractor:
         
         return cell_values
     
-    def auto_test_parameters(self, start_val, end_val, step_val, delay=0.2):
+    def auto_test_parameters(self, start_val, end_val, step_val, delay=0.01):
         """Main parameter testing loop with data extraction"""
         if self.textbox_position is None or len(self.cell_positions) != 10:
             print("Textbox position or cell positions not set!")
@@ -131,7 +131,7 @@ class DataExtractor:
                 
                 # 1. Double-click on textbox to select existing text
                 pyautogui.doubleClick(self.textbox_position)
-                time.sleep(0.02)
+                time.sleep(0.01)
                 
                 # 2. Press backspace multiple times to ensure clearing
                 pyautogui.press('backspace', presses=10)  # Clear up to 10 characters
@@ -242,7 +242,7 @@ class DataExtractor:
             
         except ValueError:
             print("Invalid input, using defaults (1 to 10, step 1, delay 0.2)")
-            start_val, end_val, step_val, delay = 1, 10, 1, 0.2
+            start_val, end_val, step_val, delay = 1, 10, 1, 0.01
             
         # Step 4: Countdown
         print(f"\nStarting parameter testing in 2 seconds...")
