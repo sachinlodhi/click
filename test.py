@@ -107,7 +107,7 @@ class DataExtractor:
             print("Textbox position or cell positions not set!")
             return False
             
-        # Generate test values normally
+        # Generate test values
         if step_val == int(step_val):  # Integer step
             test_values = list(range(int(start_val), int(end_val) + 1, int(step_val)))
         else:  # Float step
@@ -120,7 +120,6 @@ class DataExtractor:
         print(f"\nStarting parameter testing...")
         print(f"Test values: {test_values}")
         print(f"Will test {len(test_values)} different parameters")
-        print("Note: First value will be tested twice (saving only second result)")
         print("Press Ctrl+C to stop early\n")
         
         try:
@@ -173,9 +172,8 @@ class DataExtractor:
             return True
             
         except KeyboardInterrupt:
-            completed_tests = len(set(row['test_parameter'] for row in self.extracted_data))
-            print(f"\nParameter testing stopped by user.")
-            print(f"Completed {completed_tests} parameters, collected {len(self.extracted_data)} rows")
+            print(f"\nParameter testing stopped by user. Saving results...")
+            print(f"Partial data: {len(self.extracted_data)} rows collected")
             self.save_results_to_csv()
             return False
         except Exception as e:
@@ -209,8 +207,7 @@ class DataExtractor:
         print("1. Set textbox position (where to type test values)")
         print("2. Set 10 cell positions (5 rows × 2 columns table)")
         print("3. Automatically test parameters and extract cell values")
-        print("4. Each test parameter creates 5 rows in CSV (one per table row)")
-        print("5. First value is tested twice (saves only second result for clean data)\n")
+        print("4. Each test parameter creates 5 rows in CSV (one per table row)\n")
         print("CSV structure: test_parameter, row_number, column_1, column_2")
         
         # Step 1: Set textbox position
@@ -232,7 +229,7 @@ class DataExtractor:
             delay = float(input(f"Delay after pressing Enter (seconds, default 0.2): ") or "0.2")
             
             print(f"\nTest range: {start_val} to {end_val}, step {step_val}")
-            print("Method: First value runs twice (saves 2nd), others run once")
+            print("Method: Type value → Enter → Extract 10 cells → Repeat")
             
         except ValueError:
             print("Invalid input, using defaults (1 to 10, step 1, delay 0.2)")
